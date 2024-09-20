@@ -1,15 +1,25 @@
 import { Card, CardHeader, CardContent } from "../ui/card";
-import { Button } from "../ui/button";
+import { buttonVariants } from "../ui/button";
 import Image from "next/image";
 import { file_url } from "@/lib/pocketbase";
+import Link from "next/link";
+import { pb } from "@/lib/pocketbase";
 
-export const ProductCard = ({product}: any) => {
+type Props = {
+  params: {
+    product_id: string
+  }
+}
+
+export const ProductCard = async ({params}: Props) => {
+  const product = await pb.collection("productos").getOne(params.product_id, {
+    expand: "relField1,relField2.subRelField",
+  });
+
   return (
     <Card>
       <Image
-        src={
-          `${file_url}productos/${product.id}/${product.imagen}`
-        }
+        src={`${file_url}productos/${product.id}/${product.imagen}` || ""}
         width={300}
         height={300}
         alt={"Product Image"}
@@ -20,7 +30,9 @@ export const ProductCard = ({product}: any) => {
       </CardHeader>
       <CardContent>
         <p>{product.descripcion}</p>
-        <Button>Comprar ${product.precio}</Button>
+        <Link href={`/products/${product.id}`} className={buttonVariants({})}>
+          Comprar ${product.precio}
+        </Link>
       </CardContent>
     </Card>
   );
